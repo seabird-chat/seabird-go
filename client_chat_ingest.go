@@ -31,7 +31,7 @@ func (c *ChatIngestClient) Close() error {
 	return c.grpcChannel.Close()
 }
 
-func (c *ChatIngestClient) StreamEvents(cmds map[string]*pb.CommandMetadata) (*SeabirdChatIngestStream, error) {
+func (c *ChatIngestClient) IngestEvents() (*SeabirdChatIngestStream, error) {
 	ctx, cancel := context.WithCancel(context.Background())
 
 	inner, err := c.Inner.IngestEvents(ctx)
