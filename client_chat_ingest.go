@@ -31,10 +31,26 @@ func (c *ChatIngestClient) Close() error {
 	return c.grpcChannel.Close()
 }
 
-func (c *ChatIngestClient) IngestEvents() (*SeabirdChatIngestStream, error) {
+func (c *ChatIngestClient) IngestEvents(backendType, backendID string) (*SeabirdChatIngestStream, error) {
 	ctx, cancel := context.WithCancel(context.Background())
 
 	inner, err := c.Inner.IngestEvents(ctx)
+	if err != nil {
+		cancel()
+		return nil, err
+	}
+
+	// Send the proper hello event to get things started
+	err = inner.Send(&pb.ChatEvent{
+		Inner: &pb.ChatEvent_Hello{
+			Hello: &pb.HelloChatEvent{
+				BackendInfo: &pb.Backend{
+					Type: backendType,
+					Id:   backendID,
+				},
+			},
+		},
+	})
 	if err != nil {
 		cancel()
 		return nil, err
