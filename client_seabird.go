@@ -109,14 +109,14 @@ func (c *SeabirdClient) StreamEvents(cmds map[string]*pb.CommandMetadata) (*Seab
 type SeabirdEventStream struct {
 	inner      pb.Seabird_StreamEventsClient
 	cancelFunc func()
-	cancel     sync.Once
+	cancelOnce sync.Once
 	errChan    chan error
 	C          <-chan *pb.Event
 }
 
 func (s *SeabirdEventStream) cancel() {
 	if s.cancelFunc != nil {
-		s.cancel.Do(s.cancelFunc)
+		s.cancelOnce.Do(s.cancelFunc)
 	}
 }
 

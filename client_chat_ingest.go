@@ -100,7 +100,7 @@ type SeabirdChatIngestStream struct {
 	sendLock   sync.Mutex
 	inner      pb.ChatIngest_IngestEventsClient
 	cancelFunc func()
-	cancel     sync.Once
+	cancelOnce sync.Once
 	errChan    chan error
 	C          <-chan *pb.ChatRequest
 }
@@ -114,7 +114,7 @@ func (s *SeabirdChatIngestStream) Send(event *pb.ChatEvent) error {
 
 func (s *SeabirdChatIngestStream) cancel() {
 	if s.cancelFunc != nil {
-		s.cancel.Do(s.cancelFunc)
+		s.cancelOnce.Do(s.cancelFunc)
 	}
 }
 
