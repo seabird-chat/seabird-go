@@ -73,7 +73,15 @@ func (c *SeabirdClient) StreamEvents(cmds map[string]*pb.CommandMetadata) (*Seab
 	// Make sure the channel is buffered so we can store a value.
 	errChan := make(chan error, 1)
 
+	s := &SeabirdEventStream{
+		inner:      inner,
+		cancelFunc: cancel,
+		errChan:    errChan,
+		C:          in,
+	}
+
 	go func() {
+		defer s.cancel()
 		done := ctx.Done()
 
 		for {
@@ -81,6 +89,7 @@ func (c *SeabirdClient) StreamEvents(cmds map[string]*pb.CommandMetadata) (*Seab
 			if err != nil {
 				select {
 				case errChan <- err:
+					return
 				default:
 				}
 
@@ -94,30 +103,25 @@ func (c *SeabirdClient) StreamEvents(cmds map[string]*pb.CommandMetadata) (*Seab
 		}
 	}()
 
-	return &SeabirdEventStream{
-		inner:   inner,
-		cancel:  cancel,
-		errChan: errChan,
-		C:       in,
-	}, nil
+	return s, nil
 }
 
 type SeabirdEventStream struct {
 	inner      pb.Seabird_StreamEventsClient
-	cancelLock sync.Mutex
-	cancel     func()
+	cancelFunc func()
+	cancel     sync.Once
 	errChan    chan error
 	C          <-chan *pb.Event
 }
 
-func (s *SeabirdEventStream) Close() error {
-	s.cancelLock.Lock()
-	defer s.cancelLock.Unlock()
-
-	if s.cancel != nil {
-		s.cancel()
-		s.cancel = nil
+func (s *SeabirdEventStream) cancel() {
+	if s.cancelFunc != nil {
+		s.cancel.Do(s.cancelFunc)
 	}
+}
+
+func (s *SeabirdEventStream) Close() error {
+	s.cancel()
 
 	select {
 	case err := <-s.errChan:

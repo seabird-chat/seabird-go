@@ -63,7 +63,15 @@ func (c *ChatIngestClient) IngestEvents(backendType, backendID string) (*Seabird
 	// Make sure the channel is buffered so we can store a value.
 	errChan := make(chan error, 1)
 
+	s := &SeabirdChatIngestStream{
+		inner:      inner,
+		cancelFunc: cancel,
+		errChan:    errChan,
+		C:          in,
+	}
+
 	go func() {
+		defer s.cancel()
 		done := ctx.Done()
 
 		for {
@@ -71,6 +79,7 @@ func (c *ChatIngestClient) IngestEvents(backendType, backendID string) (*Seabird
 			if err != nil {
 				select {
 				case errChan <- err:
+					return
 				default:
 				}
 
@@ -84,19 +93,14 @@ func (c *ChatIngestClient) IngestEvents(backendType, backendID string) (*Seabird
 		}
 	}()
 
-	return &SeabirdChatIngestStream{
-		inner:   inner,
-		cancel:  cancel,
-		errChan: errChan,
-		C:       in,
-	}, nil
+	return s, nil
 }
 
 type SeabirdChatIngestStream struct {
 	sendLock   sync.Mutex
 	inner      pb.ChatIngest_IngestEventsClient
-	cancelLock sync.Mutex
-	cancel     func()
+	cancelFunc func()
+	cancel     sync.Once
 	errChan    chan error
 	C          <-chan *pb.ChatRequest
 }
@@ -108,14 +112,14 @@ func (s *SeabirdChatIngestStream) Send(event *pb.ChatEvent) error {
 	return s.inner.Send(event)
 }
 
-func (s *SeabirdChatIngestStream) Close() error {
-	s.cancelLock.Lock()
-	defer s.cancelLock.Unlock()
-
-	if s.cancel != nil {
-		s.cancel()
-		s.cancel = nil
+func (s *SeabirdChatIngestStream) cancel() {
+	if s.cancelFunc != nil {
+		s.cancel.Do(s.cancelFunc)
 	}
+}
+
+func (s *SeabirdChatIngestStream) Close() error {
+	s.cancel()
 
 	select {
 	case err := <-s.errChan:
