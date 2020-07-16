@@ -71,7 +71,6 @@ func (c *ChatIngestClient) IngestEvents(backendType, backendID string) (*Seabird
 	}
 
 	go func() {
-		defer s.cancelOnce.Do(s.cancelFunc)
 		done := ctx.Done()
 
 		for {
