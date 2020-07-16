@@ -71,7 +71,7 @@ func (c *ChatIngestClient) IngestEvents(backendType, backendID string) (*Seabird
 	}
 
 	go func() {
-		defer s.cancel()
+		defer s.cancelOnce.Do(s.cancelFunc)
 		done := ctx.Done()
 
 		for {
@@ -81,6 +81,8 @@ func (c *ChatIngestClient) IngestEvents(backendType, backendID string) (*Seabird
 				case errChan <- err:
 				default:
 				}
+
+				close(in)
 
 				return
 			}
@@ -111,14 +113,8 @@ func (s *SeabirdChatIngestStream) Send(event *pb.ChatEvent) error {
 	return s.inner.Send(event)
 }
 
-func (s *SeabirdChatIngestStream) cancel() {
-	if s.cancelFunc != nil {
-		s.cancelOnce.Do(s.cancelFunc)
-	}
-}
-
 func (s *SeabirdChatIngestStream) Close() error {
-	s.cancel()
+	s.cancelOnce.Do(s.cancelFunc)
 
 	select {
 	case err := <-s.errChan:

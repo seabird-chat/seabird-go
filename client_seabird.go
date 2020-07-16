@@ -81,7 +81,6 @@ func (c *SeabirdClient) StreamEvents(cmds map[string]*pb.CommandMetadata) (*Seab
 	}
 
 	go func() {
-		defer s.cancel()
 		done := ctx.Done()
 
 		for {
@@ -92,7 +91,7 @@ func (c *SeabirdClient) StreamEvents(cmds map[string]*pb.CommandMetadata) (*Seab
 				default:
 				}
 
-				fmt.Println("stream exited:", err)
+				close(in)
 
 				return
 			}
@@ -115,14 +114,8 @@ type SeabirdEventStream struct {
 	C          <-chan *pb.Event
 }
 
-func (s *SeabirdEventStream) cancel() {
-	if s.cancelFunc != nil {
-		s.cancelOnce.Do(s.cancelFunc)
-	}
-}
-
 func (s *SeabirdEventStream) Close() error {
-	s.cancel()
+	s.cancelOnce.Do(s.cancelFunc)
 
 	select {
 	case err := <-s.errChan:
