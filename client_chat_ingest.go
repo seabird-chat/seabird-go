@@ -58,7 +58,7 @@ func (c *ChatIngestClient) IngestEvents(backendType, backendID string) (*Seabird
 
 	// Because our input channel will drop events, we make sure it's buffered in
 	// case some come in while we're handling messages.
-	in := make(chan *pb.ChatRequest)
+	in := make(chan *pb.ChatRequest, 10)
 
 	// Make sure the channel is buffered so we can store a value.
 	errChan := make(chan error, 1)
