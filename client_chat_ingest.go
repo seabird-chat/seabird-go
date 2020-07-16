@@ -79,7 +79,6 @@ func (c *ChatIngestClient) IngestEvents(backendType, backendID string) (*Seabird
 			if err != nil {
 				select {
 				case errChan <- err:
-					return
 				default:
 				}
 

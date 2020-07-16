@@ -89,9 +89,10 @@ func (c *SeabirdClient) StreamEvents(cmds map[string]*pb.CommandMetadata) (*Seab
 			if err != nil {
 				select {
 				case errChan <- err:
-					return
 				default:
 				}
+
+				fmt.Println("stream exited:", err)
 
 				return
 			}
