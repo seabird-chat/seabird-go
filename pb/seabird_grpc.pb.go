@@ -11,7 +11,7 @@ import (
 
 // This is a compile-time assertion to ensure that this generated file
 // is compatible with the grpc package it is being compiled against.
-const _ = grpc.SupportPackageIsVersion6
+const _ = grpc.SupportPackageIsVersion7
 
 // SeabirdClient is the client API for Seabird service.
 //
@@ -185,7 +185,7 @@ func (c *seabirdClient) GetCoreInfo(ctx context.Context, in *CoreInfoRequest, op
 }
 
 // SeabirdServer is the server API for Seabird service.
-// All implementations should embed UnimplementedSeabirdServer
+// All implementations must embed UnimplementedSeabirdServer
 // for forward compatibility
 type SeabirdServer interface {
 	StreamEvents(*StreamEventsRequest, Seabird_StreamEventsServer) error
@@ -205,53 +205,62 @@ type SeabirdServer interface {
 	GetChannelInfo(context.Context, *ChannelInfoRequest) (*ChannelInfoResponse, error)
 	// Seabird introspection
 	GetCoreInfo(context.Context, *CoreInfoRequest) (*CoreInfoResponse, error)
+	mustEmbedUnimplementedSeabirdServer()
 }
 
-// UnimplementedSeabirdServer should be embedded to have forward compatible implementations.
+// UnimplementedSeabirdServer must be embedded to have forward compatible implementations.
 type UnimplementedSeabirdServer struct {
 }
 
-func (*UnimplementedSeabirdServer) StreamEvents(*StreamEventsRequest, Seabird_StreamEventsServer) error {
+func (UnimplementedSeabirdServer) StreamEvents(*StreamEventsRequest, Seabird_StreamEventsServer) error {
 	return status.Errorf(codes.Unimplemented, "method StreamEvents not implemented")
 }
-func (*UnimplementedSeabirdServer) PerformAction(context.Context, *PerformActionRequest) (*PerformActionResponse, error) {
+func (UnimplementedSeabirdServer) PerformAction(context.Context, *PerformActionRequest) (*PerformActionResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method PerformAction not implemented")
 }
-func (*UnimplementedSeabirdServer) PerformPrivateAction(context.Context, *PerformPrivateActionRequest) (*PerformPrivateActionResponse, error) {
+func (UnimplementedSeabirdServer) PerformPrivateAction(context.Context, *PerformPrivateActionRequest) (*PerformPrivateActionResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method PerformPrivateAction not implemented")
 }
-func (*UnimplementedSeabirdServer) SendMessage(context.Context, *SendMessageRequest) (*SendMessageResponse, error) {
+func (UnimplementedSeabirdServer) SendMessage(context.Context, *SendMessageRequest) (*SendMessageResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method SendMessage not implemented")
 }
-func (*UnimplementedSeabirdServer) SendPrivateMessage(context.Context, *SendPrivateMessageRequest) (*SendPrivateMessageResponse, error) {
+func (UnimplementedSeabirdServer) SendPrivateMessage(context.Context, *SendPrivateMessageRequest) (*SendPrivateMessageResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method SendPrivateMessage not implemented")
 }
-func (*UnimplementedSeabirdServer) JoinChannel(context.Context, *JoinChannelRequest) (*JoinChannelResponse, error) {
+func (UnimplementedSeabirdServer) JoinChannel(context.Context, *JoinChannelRequest) (*JoinChannelResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method JoinChannel not implemented")
 }
-func (*UnimplementedSeabirdServer) LeaveChannel(context.Context, *LeaveChannelRequest) (*LeaveChannelResponse, error) {
+func (UnimplementedSeabirdServer) LeaveChannel(context.Context, *LeaveChannelRequest) (*LeaveChannelResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method LeaveChannel not implemented")
 }
-func (*UnimplementedSeabirdServer) UpdateChannelInfo(context.Context, *UpdateChannelInfoRequest) (*UpdateChannelInfoResponse, error) {
+func (UnimplementedSeabirdServer) UpdateChannelInfo(context.Context, *UpdateChannelInfoRequest) (*UpdateChannelInfoResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method UpdateChannelInfo not implemented")
 }
-func (*UnimplementedSeabirdServer) ListBackends(context.Context, *ListBackendsRequest) (*ListBackendsResponse, error) {
+func (UnimplementedSeabirdServer) ListBackends(context.Context, *ListBackendsRequest) (*ListBackendsResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ListBackends not implemented")
 }
-func (*UnimplementedSeabirdServer) GetBackendInfo(context.Context, *BackendInfoRequest) (*BackendInfoResponse, error) {
+func (UnimplementedSeabirdServer) GetBackendInfo(context.Context, *BackendInfoRequest) (*BackendInfoResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetBackendInfo not implemented")
 }
-func (*UnimplementedSeabirdServer) ListChannels(context.Context, *ListChannelsRequest) (*ListChannelsResponse, error) {
+func (UnimplementedSeabirdServer) ListChannels(context.Context, *ListChannelsRequest) (*ListChannelsResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ListChannels not implemented")
 }
-func (*UnimplementedSeabirdServer) GetChannelInfo(context.Context, *ChannelInfoRequest) (*ChannelInfoResponse, error) {
+func (UnimplementedSeabirdServer) GetChannelInfo(context.Context, *ChannelInfoRequest) (*ChannelInfoResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetChannelInfo not implemented")
 }
-func (*UnimplementedSeabirdServer) GetCoreInfo(context.Context, *CoreInfoRequest) (*CoreInfoResponse, error) {
+func (UnimplementedSeabirdServer) GetCoreInfo(context.Context, *CoreInfoRequest) (*CoreInfoResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetCoreInfo not implemented")
 }
+func (UnimplementedSeabirdServer) mustEmbedUnimplementedSeabirdServer() {}
 
-func RegisterSeabirdServer(s *grpc.Server, srv SeabirdServer) {
+// UnsafeSeabirdServer may be embedded to opt out of forward compatibility for this service.
+// Use of this interface is not recommended, as added methods to SeabirdServer will
+// result in compilation errors.
+type UnsafeSeabirdServer interface {
+	mustEmbedUnimplementedSeabirdServer()
+}
+
+func RegisterSeabirdServer(s grpc.ServiceRegistrar, srv SeabirdServer) {
 	s.RegisterService(&_Seabird_serviceDesc, srv)
 }
 
