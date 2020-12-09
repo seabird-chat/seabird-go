@@ -11,7 +11,7 @@ import (
 
 // This is a compile-time assertion to ensure that this generated file
 // is compatible with the grpc package it is being compiled against.
-const _ = grpc.SupportPackageIsVersion6
+const _ = grpc.SupportPackageIsVersion7
 
 // ChatIngestClient is the client API for ChatIngest service.
 //
@@ -60,21 +60,30 @@ func (x *chatIngestIngestEventsClient) Recv() (*ChatRequest, error) {
 }
 
 // ChatIngestServer is the server API for ChatIngest service.
-// All implementations should embed UnimplementedChatIngestServer
+// All implementations must embed UnimplementedChatIngestServer
 // for forward compatibility
 type ChatIngestServer interface {
 	IngestEvents(ChatIngest_IngestEventsServer) error
+	mustEmbedUnimplementedChatIngestServer()
 }
 
-// UnimplementedChatIngestServer should be embedded to have forward compatible implementations.
+// UnimplementedChatIngestServer must be embedded to have forward compatible implementations.
 type UnimplementedChatIngestServer struct {
 }
 
-func (*UnimplementedChatIngestServer) IngestEvents(ChatIngest_IngestEventsServer) error {
+func (UnimplementedChatIngestServer) IngestEvents(ChatIngest_IngestEventsServer) error {
 	return status.Errorf(codes.Unimplemented, "method IngestEvents not implemented")
 }
+func (UnimplementedChatIngestServer) mustEmbedUnimplementedChatIngestServer() {}
 
-func RegisterChatIngestServer(s *grpc.Server, srv ChatIngestServer) {
+// UnsafeChatIngestServer may be embedded to opt out of forward compatibility for this service.
+// Use of this interface is not recommended, as added methods to ChatIngestServer will
+// result in compilation errors.
+type UnsafeChatIngestServer interface {
+	mustEmbedUnimplementedChatIngestServer()
+}
+
+func RegisterChatIngestServer(s grpc.ServiceRegistrar, srv ChatIngestServer) {
 	s.RegisterService(&_ChatIngest_serviceDesc, srv)
 }
 
