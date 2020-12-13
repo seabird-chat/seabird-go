@@ -12,28 +12,31 @@ import (
 	"github.com/seabird-chat/seabird-go/pb"
 )
 
-type SeabirdClient struct {
+// Client is a convenience wrapper around an inner gRPC SeabirdClient.
+//
+// It handles authentication, HTTP/HTTPS connection boilerplate, and provides a wrapper around the StreamEvents method to make it easier to work with.
+type Client struct {
 	grpcChannel *grpc.ClientConn
 	Inner       pb.SeabirdClient
 }
 
-func NewSeabirdClient(seabirdCoreUrl, seabirdCoreToken string) (*SeabirdClient, error) {
+func NewClient(seabirdCoreUrl, seabirdCoreToken string) (*Client, error) {
 	grpcChannel, err := newGRPCClient(seabirdCoreUrl, seabirdCoreToken)
 	if err != nil {
 		return nil, err
 	}
 
-	return &SeabirdClient{
+	return &Client{
 		grpcChannel: grpcChannel,
 		Inner:       pb.NewSeabirdClient(grpcChannel),
 	}, nil
 }
 
-func (c *SeabirdClient) Close() error {
+func (c *Client) Close() error {
 	return c.grpcChannel.Close()
 }
 
-func (c *SeabirdClient) Reply(source *pb.ChannelSource, msg string) error {
+func (c *Client) Reply(source *pb.ChannelSource, msg string) error {
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
@@ -45,19 +48,19 @@ func (c *SeabirdClient) Reply(source *pb.ChannelSource, msg string) error {
 	return err
 }
 
-func (c *SeabirdClient) Replyf(source *pb.ChannelSource, format string, args ...interface{}) error {
+func (c *Client) Replyf(source *pb.ChannelSource, format string, args ...interface{}) error {
 	return c.Reply(source, fmt.Sprintf(format, args...))
 }
 
-func (c *SeabirdClient) MentionReply(source *pb.ChannelSource, msg string) error {
+func (c *Client) MentionReply(source *pb.ChannelSource, msg string) error {
 	return c.Reply(source, fmt.Sprintf("%s: %s", source.GetUser().GetDisplayName(), msg))
 }
 
-func (c *SeabirdClient) MentionReplyf(source *pb.ChannelSource, format string, args ...interface{}) error {
+func (c *Client) MentionReplyf(source *pb.ChannelSource, format string, args ...interface{}) error {
 	return c.MentionReply(source, fmt.Sprintf(format, args...))
 }
 
-func (c *SeabirdClient) StreamEvents(cmds map[string]*pb.CommandMetadata) (*SeabirdEventStream, error) {
+func (c *Client) StreamEvents(cmds map[string]*pb.CommandMetadata) (*EventStream, error) {
 	ctx, cancel := context.WithCancel(context.Background())
 
 	inner, err := c.Inner.StreamEvents(ctx, &pb.StreamEventsRequest{Commands: cmds})
@@ -73,7 +76,7 @@ func (c *SeabirdClient) StreamEvents(cmds map[string]*pb.CommandMetadata) (*Seab
 	// Make sure the channel is buffered so we can store a value.
 	errChan := make(chan error, 1)
 
-	s := &SeabirdEventStream{
+	es := &EventStream{
 		inner:      inner,
 		cancelFunc: cancel,
 		errChan:    errChan,
@@ -103,10 +106,10 @@ func (c *SeabirdClient) StreamEvents(cmds map[string]*pb.CommandMetadata) (*Seab
 		}
 	}()
 
-	return s, nil
+	return es, nil
 }
 
-type SeabirdEventStream struct {
+type EventStream struct {
 	inner      pb.Seabird_StreamEventsClient
 	cancelFunc func()
 	cancelOnce sync.Once
@@ -114,7 +117,7 @@ type SeabirdEventStream struct {
 	C          <-chan *pb.Event
 }
 
-func (s *SeabirdEventStream) Close() error {
+func (s *EventStream) Close() error {
 	s.cancelOnce.Do(s.cancelFunc)
 
 	select {
