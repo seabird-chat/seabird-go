@@ -45,7 +45,7 @@ func NewSeabirdClient(cc grpc.ClientConnInterface) SeabirdClient {
 }
 
 func (c *seabirdClient) StreamEvents(ctx context.Context, in *StreamEventsRequest, opts ...grpc.CallOption) (Seabird_StreamEventsClient, error) {
-	stream, err := c.cc.NewStream(ctx, &_Seabird_serviceDesc.Streams[0], "/seabird.Seabird/StreamEvents", opts...)
+	stream, err := c.cc.NewStream(ctx, &Seabird_ServiceDesc.Streams[0], "/seabird.Seabird/StreamEvents", opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -261,7 +261,7 @@ type UnsafeSeabirdServer interface {
 }
 
 func RegisterSeabirdServer(s grpc.ServiceRegistrar, srv SeabirdServer) {
-	s.RegisterService(&_Seabird_serviceDesc, srv)
+	s.RegisterService(&Seabird_ServiceDesc, srv)
 }
 
 func _Seabird_StreamEvents_Handler(srv interface{}, stream grpc.ServerStream) error {
@@ -501,7 +501,10 @@ func _Seabird_GetCoreInfo_Handler(srv interface{}, ctx context.Context, dec func
 	return interceptor(ctx, in, info, handler)
 }
 
-var _Seabird_serviceDesc = grpc.ServiceDesc{
+// Seabird_ServiceDesc is the grpc.ServiceDesc for Seabird service.
+// It's only intended for direct use with grpc.RegisterService,
+// and not to be introspected or modified (even as a copy)
+var Seabird_ServiceDesc = grpc.ServiceDesc{
 	ServiceName: "seabird.Seabird",
 	HandlerType: (*SeabirdServer)(nil),
 	Methods: []grpc.MethodDesc{
