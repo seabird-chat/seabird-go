@@ -34,6 +34,7 @@ type SeabirdClient interface {
 	GetChannelInfo(ctx context.Context, in *ChannelInfoRequest, opts ...grpc.CallOption) (*ChannelInfoResponse, error)
 	// Seabird introspection
 	GetCoreInfo(ctx context.Context, in *CoreInfoRequest, opts ...grpc.CallOption) (*CoreInfoResponse, error)
+	RegisteredCommands(ctx context.Context, in *CommandsRequest, opts ...grpc.CallOption) (*CommandsResponse, error)
 }
 
 type seabirdClient struct {
@@ -184,6 +185,15 @@ func (c *seabirdClient) GetCoreInfo(ctx context.Context, in *CoreInfoRequest, op
 	return out, nil
 }
 
+func (c *seabirdClient) RegisteredCommands(ctx context.Context, in *CommandsRequest, opts ...grpc.CallOption) (*CommandsResponse, error) {
+	out := new(CommandsResponse)
+	err := c.cc.Invoke(ctx, "/seabird.Seabird/RegisteredCommands", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // SeabirdServer is the server API for Seabird service.
 // All implementations must embed UnimplementedSeabirdServer
 // for forward compatibility
@@ -205,6 +215,7 @@ type SeabirdServer interface {
 	GetChannelInfo(context.Context, *ChannelInfoRequest) (*ChannelInfoResponse, error)
 	// Seabird introspection
 	GetCoreInfo(context.Context, *CoreInfoRequest) (*CoreInfoResponse, error)
+	RegisteredCommands(context.Context, *CommandsRequest) (*CommandsResponse, error)
 	mustEmbedUnimplementedSeabirdServer()
 }
 
@@ -250,6 +261,9 @@ func (UnimplementedSeabirdServer) GetChannelInfo(context.Context, *ChannelInfoRe
 }
 func (UnimplementedSeabirdServer) GetCoreInfo(context.Context, *CoreInfoRequest) (*CoreInfoResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetCoreInfo not implemented")
+}
+func (UnimplementedSeabirdServer) RegisteredCommands(context.Context, *CommandsRequest) (*CommandsResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method RegisteredCommands not implemented")
 }
 func (UnimplementedSeabirdServer) mustEmbedUnimplementedSeabirdServer() {}
 
@@ -501,6 +515,24 @@ func _Seabird_GetCoreInfo_Handler(srv interface{}, ctx context.Context, dec func
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Seabird_RegisteredCommands_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(CommandsRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(SeabirdServer).RegisteredCommands(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/seabird.Seabird/RegisteredCommands",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(SeabirdServer).RegisteredCommands(ctx, req.(*CommandsRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // Seabird_ServiceDesc is the grpc.ServiceDesc for Seabird service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -555,6 +587,10 @@ var Seabird_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetCoreInfo",
 			Handler:    _Seabird_GetCoreInfo_Handler,
+		},
+		{
+			MethodName: "RegisteredCommands",
+			Handler:    _Seabird_RegisteredCommands_Handler,
 		},
 	},
 	Streams: []grpc.StreamDesc{
