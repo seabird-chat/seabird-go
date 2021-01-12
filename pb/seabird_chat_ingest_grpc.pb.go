@@ -29,7 +29,7 @@ func NewChatIngestClient(cc grpc.ClientConnInterface) ChatIngestClient {
 }
 
 func (c *chatIngestClient) IngestEvents(ctx context.Context, opts ...grpc.CallOption) (ChatIngest_IngestEventsClient, error) {
-	stream, err := c.cc.NewStream(ctx, &ChatIngest_ServiceDesc.Streams[0], "/seabird.ChatIngest/IngestEvents", opts...)
+	stream, err := c.cc.NewStream(ctx, &_ChatIngest_serviceDesc.Streams[0], "/seabird.ChatIngest/IngestEvents", opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -84,7 +84,7 @@ type UnsafeChatIngestServer interface {
 }
 
 func RegisterChatIngestServer(s grpc.ServiceRegistrar, srv ChatIngestServer) {
-	s.RegisterService(&ChatIngest_ServiceDesc, srv)
+	s.RegisterService(&_ChatIngest_serviceDesc, srv)
 }
 
 func _ChatIngest_IngestEvents_Handler(srv interface{}, stream grpc.ServerStream) error {
@@ -113,10 +113,7 @@ func (x *chatIngestIngestEventsServer) Recv() (*ChatEvent, error) {
 	return m, nil
 }
 
-// ChatIngest_ServiceDesc is the grpc.ServiceDesc for ChatIngest service.
-// It's only intended for direct use with grpc.RegisterService,
-// and not to be introspected or modified (even as a copy)
-var ChatIngest_ServiceDesc = grpc.ServiceDesc{
+var _ChatIngest_serviceDesc = grpc.ServiceDesc{
 	ServiceName: "seabird.ChatIngest",
 	HandlerType: (*ChatIngestServer)(nil),
 	Methods:     []grpc.MethodDesc{},
