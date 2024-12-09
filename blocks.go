@@ -147,6 +147,17 @@ func NewContainerBlock(inner ...*pb.Block) *pb.Block {
 	}
 }
 
+func NewListBlock(inner ...*pb.Block) *pb.Block {
+	return &pb.Block{
+		Plain: blocksToString(inner...),
+		Inner: &pb.Block_List{
+			List: &pb.ListBlock{
+				Inner: inner,
+			},
+		},
+	}
+}
+
 func NewLinkBlock(url string, inner ...*pb.Block) *pb.Block {
 	return &pb.Block{
 		Plain: blocksToString(inner...) + fmt.Sprintf(" (%s)", url),
