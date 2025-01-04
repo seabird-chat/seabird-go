@@ -31,6 +31,14 @@ func spacedBlocksToString(sep string, blocks ...*pb.Block) string {
 	return buf.String()
 }
 
+func maybeContainer(inner ...*pb.Block) *pb.Block {
+	if len(inner) == 1 {
+		return inner[0]
+	}
+
+	return NewContainerBlock(inner...)
+}
+
 func NewTextBlock(text string) *pb.Block {
 	return &pb.Block{
 		Plain: text,
@@ -62,7 +70,7 @@ func NewItalicsBlock(inner ...*pb.Block) *pb.Block {
 		Plain: blocksToString(inner...),
 		Inner: &pb.Block_Italics{
 			Italics: &pb.ItalicsBlock{
-				Inner: inner,
+				Inner: maybeContainer(inner...),
 			},
 		},
 	}
@@ -72,7 +80,7 @@ func NewBoldBlock(inner ...*pb.Block) *pb.Block {
 		Plain: blocksToString(inner...),
 		Inner: &pb.Block_Bold{
 			Bold: &pb.BoldBlock{
-				Inner: inner,
+				Inner: maybeContainer(inner...),
 			},
 		},
 	}
@@ -83,7 +91,7 @@ func NewUnderlineBlock(inner ...*pb.Block) *pb.Block {
 		Plain: blocksToString(inner...),
 		Inner: &pb.Block_Underline{
 			Underline: &pb.UnderlineBlock{
-				Inner: inner,
+				Inner: maybeContainer(inner...),
 			},
 		},
 	}
@@ -94,7 +102,7 @@ func NewStrikethroughBlock(inner ...*pb.Block) *pb.Block {
 		Plain: blocksToString(inner...),
 		Inner: &pb.Block_Strikethrough{
 			Strikethrough: &pb.StrikethroughBlock{
-				Inner: inner,
+				Inner: maybeContainer(inner...),
 			},
 		},
 	}
@@ -117,7 +125,7 @@ func NewSpoilerBlock(inner ...*pb.Block) *pb.Block {
 		Plain: blocksToString(inner...),
 		Inner: &pb.Block_Spoiler{
 			Spoiler: &pb.SpoilerBlock{
-				Inner: inner,
+				Inner: maybeContainer(inner...),
 			},
 		},
 	}
@@ -129,7 +137,7 @@ func NewHeadingBlock(level int, inner ...*pb.Block) *pb.Block {
 		Inner: &pb.Block_Heading{
 			Heading: &pb.HeadingBlock{
 				Level: int32(level),
-				Inner: inner,
+				Inner: maybeContainer(inner...),
 			},
 		},
 	}
@@ -140,7 +148,7 @@ func NewBlockquoteBlock(inner ...*pb.Block) *pb.Block {
 		Plain: spacedBlocksToString("\n", inner...),
 		Inner: &pb.Block_Blockquote{
 			Blockquote: &pb.BlockquoteBlock{
-				Inner: inner,
+				Inner: maybeContainer(inner...),
 			},
 		},
 	}
@@ -174,7 +182,7 @@ func NewLinkBlock(url string, inner ...*pb.Block) *pb.Block {
 		Inner: &pb.Block_Link{
 			Link: &pb.LinkBlock{
 				Url:   url,
-				Inner: inner,
+				Inner: maybeContainer(inner...),
 			},
 		},
 	}
