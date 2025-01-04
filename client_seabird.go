@@ -44,6 +44,7 @@ func (c *Client) Reply(source *pb.ChannelSource, msg string) error {
 	_, err := c.Inner.SendMessage(ctx, &pb.SendMessageRequest{
 		ChannelId: source.GetChannelId(),
 		Text:      msg,
+		RootBlock: NewTextBlock(msg),
 	})
 
 	return err
@@ -64,7 +65,7 @@ func (c *Client) ReplyBlocks(source *pb.ChannelSource, blocks ...*pb.Block) erro
 
 	_, err := c.Inner.SendMessage(ctx, &pb.SendMessageRequest{
 		ChannelId: source.GetChannelId(),
-		Blocks:    blocks,
+		RootBlock: maybeContainer(blocks...),
 		Text:      textBuf.String(),
 	})
 
