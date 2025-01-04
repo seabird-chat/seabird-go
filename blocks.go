@@ -11,9 +11,20 @@ import (
 )
 
 func blocksToString(blocks ...*pb.Block) string {
+	return spacedBlocksToString("", blocks...)
+}
+
+func spacedBlocksToString(sep string, blocks ...*pb.Block) string {
 	var buf bytes.Buffer
 
+	first := true
+
 	for _, block := range blocks {
+		if first {
+			first = false
+		} else {
+			buf.WriteString(sep)
+		}
 		buf.WriteString(block.Plain)
 	}
 
@@ -101,19 +112,6 @@ func NewFencedCodeBlock(info string, text string) *pb.Block {
 	}
 }
 
-// TODO: implement
-/*
-func NewMentionBlock() *pb.Block {
-	return &pb.Block{
-		Inner: &pb.Block_Mention{
-			Mention: &pb.MentionBlock{
-				User: nil,
-			},
-		},
-	}
-}
-*/
-
 func NewSpoilerBlock(inner ...*pb.Block) *pb.Block {
 	return &pb.Block{
 		Plain: blocksToString(inner...),
@@ -125,9 +123,21 @@ func NewSpoilerBlock(inner ...*pb.Block) *pb.Block {
 	}
 }
 
-func NewBlockquoteBlock(inner ...*pb.Block) *pb.Block {
+func NewHeadingBlock(level int, inner ...*pb.Block) *pb.Block {
 	return &pb.Block{
 		Plain: blocksToString(inner...),
+		Inner: &pb.Block_Heading{
+			Heading: &pb.HeadingBlock{
+				Level: int32(level),
+				Inner: inner,
+			},
+		},
+	}
+}
+
+func NewBlockquoteBlock(inner ...*pb.Block) *pb.Block {
+	return &pb.Block{
+		Plain: spacedBlocksToString("\n", inner...),
 		Inner: &pb.Block_Blockquote{
 			Blockquote: &pb.BlockquoteBlock{
 				Inner: inner,
