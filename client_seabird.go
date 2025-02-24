@@ -1,6 +1,7 @@
 package seabird
 
 import (
+	"bytes"
 	"context"
 	"errors"
 	"fmt"
@@ -43,6 +44,7 @@ func (c *Client) Reply(source *pb.ChannelSource, msg string) error {
 	_, err := c.Inner.SendMessage(ctx, &pb.SendMessageRequest{
 		ChannelId: source.GetChannelId(),
 		Text:      msg,
+		RootBlock: NewTextBlock(msg),
 	})
 
 	return err
@@ -50,6 +52,24 @@ func (c *Client) Reply(source *pb.ChannelSource, msg string) error {
 
 func (c *Client) Replyf(source *pb.ChannelSource, format string, args ...interface{}) error {
 	return c.Reply(source, fmt.Sprintf(format, args...))
+}
+
+func (c *Client) ReplyBlocks(source *pb.ChannelSource, blocks ...*pb.Block) error {
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	var textBuf bytes.Buffer
+	for _, block := range blocks {
+		textBuf.WriteString(block.Plain)
+	}
+
+	_, err := c.Inner.SendMessage(ctx, &pb.SendMessageRequest{
+		ChannelId: source.GetChannelId(),
+		RootBlock: maybeContainer(blocks...),
+		Text:      textBuf.String(),
+	})
+
+	return err
 }
 
 func (c *Client) MentionReply(source *pb.ChannelSource, msg string) error {
