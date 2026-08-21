@@ -1,7 +1,6 @@
 package seabird
 
 import (
-	"bytes"
 	"context"
 	"errors"
 	"fmt"
@@ -58,15 +57,11 @@ func (c *Client) ReplyBlocks(source *pb.ChannelSource, blocks ...*pb.Block) erro
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
-	var textBuf bytes.Buffer
-	for _, block := range blocks {
-		textBuf.WriteString(block.Plain)
-	}
-
+	// Text is left empty on purpose: seabird-core flattens RootBlock and fills
+	// it in for clients which only understand text.
 	_, err := c.Inner.SendMessage(ctx, &pb.SendMessageRequest{
 		ChannelId: source.GetChannelId(),
 		RootBlock: maybeContainer(blocks...),
-		Text:      textBuf.String(),
 	})
 
 	return err
