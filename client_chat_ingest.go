@@ -44,7 +44,7 @@ func (c *ChatIngestClient) IngestEvents(backendType, backendID string) (*Seabird
 	err = inner.Send(&pb.ChatEvent{
 		Inner: &pb.ChatEvent_Hello{
 			Hello: &pb.HelloChatEvent{
-				BackendInfo: &pb.Backend{
+				BackendInfo: &pb.HelloChatEvent_Backend{
 					Type: backendType,
 					Id:   backendID,
 				},
