@@ -32,6 +32,17 @@ func (c *ChatIngestClient) Close() error {
 }
 
 func (c *ChatIngestClient) IngestEvents(backendType, backendID string) (*SeabirdChatIngestStream, error) {
+	return c.IngestEventsWithHello(&pb.HelloChatEvent{
+		BackendInfo: &pb.HelloChatEvent_Backend{
+			Type: backendType,
+			Id:   backendID,
+		},
+	})
+}
+
+// IngestEventsWithHello is IngestEvents with the whole hello, for backends that
+// give a display name or features.
+func (c *ChatIngestClient) IngestEventsWithHello(hello *pb.HelloChatEvent) (*SeabirdChatIngestStream, error) {
 	ctx, cancel := context.WithCancel(context.Background())
 
 	inner, err := c.Inner.IngestEvents(ctx)
@@ -42,14 +53,7 @@ func (c *ChatIngestClient) IngestEvents(backendType, backendID string) (*Seabird
 
 	// Send the proper hello event to get things started
 	err = inner.Send(&pb.ChatEvent{
-		Inner: &pb.ChatEvent_Hello{
-			Hello: &pb.HelloChatEvent{
-				BackendInfo: &pb.HelloChatEvent_Backend{
-					Type: backendType,
-					Id:   backendID,
-				},
-			},
-		},
+		Inner: &pb.ChatEvent_Hello{Hello: hello},
 	})
 	if err != nil {
 		cancel()
